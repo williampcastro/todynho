@@ -1,24 +1,18 @@
 var resitfy = require('restify');
-var  _ =  require ( 'lodash' );
+var _ = require('lodash');
+var mysql = require('mysql');
 
-var todinhos = [
-    {
-        id: 1,
-        lote: "Lote",
-        conteudo: "Conteudo",
-        validade: "Validade"
-    },
-    {
-        id: 2,
-        lote: "Lote",
-        conteudo: "Conteudo",
-        validade: "Validade"
-    }
-];
+var conn = {
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'ec021'
+}
+
 
 // lista todos os elementos do bd
 getAll = (req, resp, next) => {
-    
+
     //Definindo o formato da response
     resp.setHeader('Content-Type', 'application/json');
     resp.charSet('UTF-8');
@@ -34,43 +28,64 @@ addTody = (req, resp, next) => {
     resp.setHeader('Content-Type', 'application/json');
     resp.charSet('UTF-8');
 
-    let todinho = [] ;
     let data = req.body;
-    todinho = [{
-        id : parseInt(data.id),
-        lote : data.lote,
-        conteudo : data.conteudo,
-        validade : data.validade
-    }]
 
-    // console.log(todinho);
-    // console.log(todinhos);
+    tody = {
+        lote: data.lote,
+        conteudo: data.conteudo,
+        validade: data.validade
+    }
 
-    todinhos = _.concat(todinhos,todinho);
+    console.log("==========CONECTANDO COM O BANCO==========");
+    var connection = mysql.createConnection(conn);
+    connection.connect()
 
-    resp.send(todinhos);
+    var addQuery = "INSERT INTO toddy (lote, conteudo, validade)"
+        + "VALUES('" + tody.lote + "', '" + tody.conteudo + "', '" + tody.validade + "');";
+
+    console.log(addQuery);
+
+    connection.query(addQuery, (err, rows, fields) => {
+        if (!err) {
+            console.log(rows);
+        } else {
+            console.log(err)
+        }
+    })
+
+    resp.send(tody);
+    
+    connection.end();
+
     next();
 }
 
-    // update = (req, resp, next) => {
-    //     //Definindo o formato da response
-    //     resp.setHeader('Content-Type', 'application/json');
-    //     resp.charSet('UTF-8');
+// update = (req, resp, next) => {
+//     //Definindo o formato da response
+//     resp.setHeader('Content-Type', 'application/json');
+//     resp.charSet('UTF-8');
 
-        
-    //     resp.send("Soma = " + soma.toString());
-    //     next();
-    // }
 
-    // addTody = (req, resp, next) => {
-    //     //Definindo o formato da response
-    //     resp.setHeader('Content-Type', 'application/json');
-    //     resp.charSet('UTF-8');
+//     resp.send("Soma = " + soma.toString());
+//     next();
+// }
 
-        
-    //     resp.send("Soma = " + soma.toString());
-    //     next();
-    // }
+// addTody = (req, resp, next) => {
+//     //Definindo o formato da response
+//     resp.setHeader('Content-Type', 'application/json');
+//     resp.charSet('UTF-8');
+
+
+//     resp.send("Soma = " + soma.toString());
+//     next();
+// }
+
+// remove(id){
+
+//     _.remove(todinhos, o => {
+//         return o.id == id;
+//      });
+// }
 
 var server = resitfy.createServer({
     name: 'Todinho v1.0'
